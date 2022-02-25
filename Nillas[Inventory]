@@ -1,0 +1,308 @@
+//AUTHOR: Miguel Nillas
+//COURSE: CPT187
+//PURPOSE: Class inventory is used to keep track of stock for customer orders and restocking. 
+//STARTDATE: 2/10/2022
+package edu.cpt187.nillas.exercise6;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Random;
+import java.util.Scanner;  
+
+public class Inventory 
+{
+	private final String[] DISCOUNT_NAMES = {"Club Member", "Club Senior", "Special Offer", "No Discount"};
+	private final double[] DISCOUNT_RATES = {0.15, 0.25, 0.2, 0};
+	private final String[] PRIZE_NAMES = {"spoon", "fork", "knife"};
+	private final int MAX_RECORDS = 35;
+	private final int NOT_FOUND = -1;
+	private final int ONE = 1;
+	private final int RESET_VALUE = 0;
+	private int[] itemIDs = new int[MAX_RECORDS];
+	private String[] itemNames = new String[MAX_RECORDS];
+	private double[] itemPrices = new double[MAX_RECORDS];
+	private int[] inStockCounts = new int[MAX_RECORDS];
+	private int[] orderQuantities = new int[MAX_RECORDS];
+	private double[] orderTotals = new double[MAX_RECORDS];
+	private int itemSearchIndex = 0;
+	private int recordCount = 0;
+	private Random prizeGenerator = new Random();  
+	
+	//contstructor
+	Inventory()
+	{
+		
+	}// end of default constructor
+			
+	
+	
+	//setters
+	
+	//this behavior will set the value from setReduceStock
+	public void setReduceStock(int borrowedHowMany)
+	{
+		inStockCounts[itemSearchIndex]= inStockCounts[itemSearchIndex]- borrowedHowMany;
+	}//end of setReduceStock
+		
+	//this behavior will set the value from setLoadItems
+	public void setLoadItems(String borrowedFileName)
+	{
+		//try and catch blocks (for io files)
+		try
+		{
+			Scanner infile = new Scanner(new FileInputStream(borrowedFileName));
+			recordCount  = RESET_VALUE;
+			while(infile.hasNext() == true && recordCount < MAX_RECORDS)
+			{
+				itemIDs[recordCount] = infile.nextInt();
+				itemNames[recordCount] = infile.next();
+				itemPrices[recordCount] = infile.nextDouble();
+				inStockCounts[recordCount] = infile.nextInt();
+				recordCount++;
+			}
+			infile.close();
+			
+			setBubbleSort();
+		}//end of try
+		catch(IOException ex)
+		{
+			recordCount = NOT_FOUND;
+		}//end of catch
+		
+	}//end of setLoadItems
+	
+	//this behavior will set the value from setLoadItems
+	public void setLoadItems(String borrowedFileName, int borrowedSize)
+	{
+		//try and catch blocks (for io files)
+		try
+		{
+			Scanner infile = new Scanner(new FileInputStream(borrowedFileName));
+			recordCount  = RESET_VALUE;
+			while(infile.hasNext() == true && recordCount < MAX_RECORDS && recordCount < borrowedSize)
+			{
+				itemIDs[recordCount] = infile.nextInt();
+				itemNames[recordCount] = infile.next();
+				itemPrices[recordCount] = infile.nextDouble();
+				orderQuantities[recordCount] = infile.nextInt();
+				orderTotals[recordCount] = infile.nextDouble();
+				recordCount++;
+			}
+			infile.close();
+			setBubbleSort();
+		}//end of try
+		catch(IOException ex)
+		{
+			recordCount = NOT_FOUND;
+		}//end of catch
+	}//end of set load items
+	
+	//this behavior will set the value from setSearchIndex
+	public void setSearchIndex(int borrowedID)
+	{
+		itemSearchIndex = getBinSearch(borrowedID);
+	}//end of setSearchIndex
+	
+	//this behavior will start bubble sort
+	public void setBubbleSort()
+	{
+		int localLast = 0;
+		int localIndex = 0;
+		boolean swap = false;
+		
+		localLast = recordCount - ONE;
+		while(localLast > 0 )
+		{
+			localIndex = RESET_VALUE;
+			swap = false;
+			
+			while(localIndex < localLast)
+			{
+				if(itemIDs[localIndex] > itemIDs[localIndex + ONE])
+				{
+					setSwapArrayElements(localIndex);
+					swap = true;
+				}
+				localIndex++;
+			}
+			if(swap == false)
+			{
+				localLast = RESET_VALUE;
+			}
+			else
+			{
+				localLast --;
+			}
+			
+		}
+	}//end of bubble sort
+	
+	//this is the swap algorithm method
+	public void setSwapArrayElements(int borrowedIndex)
+	{
+		int localItemID = 0;
+		String localName = "";
+		double localPrice = 0.0;
+		int localInStockCount = 0;
+		int localOrderQuantities = 0;
+		double localOrderTotals = 0.0;
+		
+		localItemID = itemIDs[borrowedIndex];
+		localName = itemNames[borrowedIndex];
+		localPrice = itemPrices[borrowedIndex];
+		localOrderQuantities = orderQuantities[borrowedIndex];
+		localOrderTotals = orderTotals[borrowedIndex];
+		localInStockCount = inStockCounts[borrowedIndex];
+		
+		itemIDs[borrowedIndex] = itemIDs[borrowedIndex + ONE];
+		itemNames[borrowedIndex] = itemNames[borrowedIndex+ONE];
+		itemPrices[borrowedIndex] = itemPrices[borrowedIndex+ONE];
+		inStockCounts[borrowedIndex] = inStockCounts[borrowedIndex + ONE];
+		orderTotals[borrowedIndex] = orderTotals[borrowedIndex + ONE];
+		orderQuantities[borrowedIndex] = orderQuantities[borrowedIndex + ONE];
+		
+		itemIDs[borrowedIndex+ONE] = localItemID;
+		itemNames[borrowedIndex+ONE] = localName;
+		itemPrices[borrowedIndex+ONE] = localPrice;
+		inStockCounts[borrowedIndex+ONE] = localInStockCount;
+		orderQuantities[borrowedIndex+ONE] = localOrderQuantities;
+		orderTotals[borrowedIndex+ONE] = localOrderTotals;
+	
+	}//end of swap array
+	
+	
+	
+	
+	//getters
+	
+	//this vr method gets binary search
+	public int getBinSearch(int borrowedBorrowedID)
+	{
+		final int TWO = 2;
+		int localLast = 0;
+		int localFirst = 0;
+		int localMid = 0;
+		boolean localFound = false;
+		localLast = recordCount - ONE;
+		while(localFirst <= localLast && localFound == false)
+		{
+			localMid = (localFirst+localLast)/TWO;
+			if(itemIDs[localMid] == borrowedBorrowedID)
+			{
+				localFound = true;
+			}
+			else
+			{
+				if(itemIDs[localMid]<borrowedBorrowedID)
+				{
+					localFirst = localMid+ONE;
+				}
+				else
+				{
+					localLast = localMid - ONE;
+				}
+			}
+		}
+		if(localFound == false)
+		{
+			localMid = NOT_FOUND;
+		}
+		return localMid;
+		
+	}//end of binary search
+	
+	//this vr method gets OrderQuantities
+	public int[] getOrderQuantities()
+	{
+		return orderQuantities;
+	}//end of vr method getOrderQuantities
+	
+	//this behavior will retrieve the value of  getOrderTotal
+	public double[] getOrderTotals()
+	{
+		return orderTotals;
+	}//end of  getOrderTotal
+	
+	//this behavior will retrieve the value of ItemIDs
+	public int[] getItemIDs()
+	{
+		return itemIDs;
+	}//end of ItemIDs
+	
+	
+	//this behavior will retrieve the value of inStockCounts
+	public int[] getInStockCounts()
+	{
+		return inStockCounts;
+	}//end of getInStockCounts()
+	
+	//this behavior will retrieve the value from getItemNames
+	public String[] getItemNames()
+	{
+		return itemNames;
+	}//end of getItemNames
+	
+	//this behavior will retrieve the value from getItemPrices
+	public double[] getItemPrices()
+	{
+		return itemPrices;
+	}//end of getItemPrices
+	
+	//this behavior will retrieve the value from getDiscountNames
+	public String[] getDiscountNames()
+	{
+		return DISCOUNT_NAMES;
+	}//end of getDiscountNames
+	
+	//this behavior will retrieve the value from getDiscountRates
+	public double [] getDiscountRates()
+	{
+		return DISCOUNT_RATES;
+	}//end of getDiscountRates
+	
+	//this behavior will retrieve the value from getPrizeNames
+	public String[] getPrizeNames()
+	{
+		return PRIZE_NAMES;
+	}//end of getPrizeNames
+	
+	//this behavior will retrieve the value from getRandomNumber
+	public int getRandomNumber()
+	{
+		return prizeGenerator.nextInt(PRIZE_NAMES.length);
+		
+	}//end of getRandomNumber
+			
+	
+	//this behavior will retrieve the value from getMaxRecords
+	public int getMaxRecords()
+	{
+		return MAX_RECORDS;
+	}//end of getMaxRecords
+	
+	//this behavior will retrieve the value from getItemSearchIndex
+	public int getItemSearchIndex()
+	{
+		return itemSearchIndex;
+	}//end of getItemSearchIndex
+	
+	//this behavior will retrieve the value from getRecordCount
+	public int getRecordCount()
+	{
+		return recordCount;
+	}//end of getRecordCount
+	
+	//this behavior will retrieve the value from getGrandTotal
+	public double getGrandTotal()
+	{
+		int localIndex = 0;
+		double grandTotal= 0.0;
+		
+		while(localIndex < orderTotals.length)
+		{
+			grandTotal = grandTotal + orderTotals[localIndex];
+			localIndex++;
+		}
+		return grandTotal;
+	}//end of getGrandTotal
+	
+}//end of class invnetory
