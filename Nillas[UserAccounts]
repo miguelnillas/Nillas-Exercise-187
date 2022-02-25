@@ -1,0 +1,62 @@
+//COURSE: CPT187
+//PURPOSE:  This class saves information to be used when necessary
+//STARTDATE: 2/10/2022
+package edu.cpt187.nillas.exercise6;
+import java.io.PrintWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+
+public class WriteOrder 
+{
+	private boolean fileFoundFlag = false;
+	private String masterFileName = "";
+	private int recordCount = 0;
+	
+	//contructor
+	WriteOrder(String borrowedFileName)
+	{
+		masterFileName = borrowedFileName;
+	}//non default constructor end
+	
+	//setters
+	
+	//this void method sets the write order
+	public void setWriteOrder(int borrowedItemId, String borrowedItemName, double borrowedItemPrice, int borrowedQuantity, double borrowedOrderCost)
+	{
+		//appends file and uses file handling
+		try
+		{
+			PrintWriter filePW = new PrintWriter(new FileWriter(masterFileName, true));
+			
+			filePW.printf("%d\t%s\t%.2f\t%d\t%.2f\n", borrowedItemId, borrowedItemName, borrowedItemPrice, borrowedQuantity, borrowedOrderCost);
+			fileFoundFlag = true;
+			recordCount++;
+			filePW.close();
+		}
+		catch(IOException ex)
+		{
+			fileFoundFlag = false;
+		}
+	}//end of set write order
+	
+	//getters
+	
+	//this vr method gets file found flag
+	public boolean getFileFoundFlag() 
+	{
+		return fileFoundFlag;
+	}//end of file found flag
+	
+	//this vr method gets file name
+	public String getFileName()
+	{
+		return masterFileName;
+	}//end of get file name vr method
+	
+	//this vr method gets record count
+	public int getRecordCount()
+	{
+		return recordCount;
+	}//end of vr method get record count
+	
+}
